@@ -3,187 +3,295 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Timeline Triage</title>
+<title>Own Your Algorithm — Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Condensed:wght@700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1115;
-    --panel: #171a21;
-    --panel-2: #1e222b;
-    --line: #2a2f3a;
-    --text: #e6e8ec;
-    --muted: #9aa3b2;
-    --accent: #5b9dff;
-    --up: #35c26b;
-    --down: #e5544b;
+    --ink: #17140f;
+    --panel: #211d16;
+    --panel-2: #2a251b;
+    --rule: #3a3226;
+    --paper: #ece5d3;
+    --paper-dim: #b9ae97;
+    --amber: #d99a2b;
+    --amber-dim: rgba(217,154,43,.14);
+    --teal: #5fa393;
+    --teal-dim: rgba(95,163,147,.14);
+    --spike: #d1453b;
+    --spike-dim: rgba(209,69,59,.14);
+    --font-display: "Big Shoulders Condensed", Impact, "Haettenschweiler", sans-serif;
+    --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0; background: var(--ink); color: var(--paper);
+    font: 15px/1.55 var(--font-body);
   }
+  code { font-family: var(--font-mono); }
+
   header {
     position: sticky; top: 0; z-index: 5;
-    background: rgba(15,17,21,.9); backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--line);
-    padding: 14px 20px; display: flex; align-items: baseline; gap: 14px;
+    background: rgba(23,20,15,.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+    box-shadow: 0 1px 0 var(--amber-dim);
+    padding: 12px 20px; display: flex; align-items: center; gap: 12px;
   }
-  header h1 { font-size: 17px; margin: 0; letter-spacing: .2px; }
-  header .meta { color: var(--muted); font-size: 13px; }
-  main { max-width: 780px; margin: 0 auto; padding: 20px; }
+  .lamp {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--amber);
+    box-shadow: 0 0 6px 1px var(--amber-dim); flex: none;
+    animation: breathe 3.2s ease-in-out infinite;
+  }
+  header h1 {
+    font: 800 22px/1 var(--font-display); text-transform: uppercase;
+    letter-spacing: .03em; margin: 0;
+  }
+  header .meta {
+    color: var(--paper-dim); font: 500 11px/1 var(--font-mono);
+    text-transform: uppercase; letter-spacing: .06em; margin-left: auto;
+    text-align: right;
+  }
+  main { max-width: 800px; margin: 0 auto; padding: 22px 20px 60px; }
 
-  .section { margin-bottom: 22px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--panel); }
+  .section {
+    margin-bottom: 18px; border: 1px solid var(--rule); border-radius: 4px;
+    overflow: hidden; background: var(--panel);
+  }
   .section > summary {
-    list-style: none; cursor: pointer; padding: 14px 16px;
-    display: flex; align-items: center; gap: 10px; user-select: none;
+    list-style: none; cursor: pointer; padding: 13px 16px;
+    display: flex; align-items: baseline; gap: 10px; user-select: none;
   }
   .section > summary::-webkit-details-marker { display: none; }
-  .section > summary::before { content: "▸"; color: var(--muted); transition: transform .15s; }
+  .section > summary::before { content: "▸"; color: var(--paper-dim); transition: transform .15s; flex: none; }
   .section[open] > summary::before { transform: rotate(90deg); }
-  .section h2 { font-size: 15px; margin: 0; }
-  .count { color: var(--muted); font-size: 13px; }
-  .chip { margin-left: auto; font-size: 12px; color: var(--muted); }
-
-  .summary-box {
-    margin: 0 16px 12px; padding: 12px 14px; background: var(--panel-2);
-    border: 1px solid var(--line); border-radius: 8px; font-size: 14px; color: #d3d8e0;
+  .desk-code {
+    font: 600 11px/1 var(--font-mono); letter-spacing: .1em; color: var(--paper-dim);
   }
-  .summary-box ul { margin: 0; padding-left: 18px; }
-  .summary-box li { margin: 3px 0; }
+  .section h2 {
+    font: 800 19px/1 var(--font-display); text-transform: uppercase;
+    letter-spacing: .01em; margin: 0;
+  }
+  .count { color: var(--paper-dim); font: 500 12px/1 var(--font-mono); }
+  .lead { margin-left: auto; font: 600 11px/1 var(--font-mono); letter-spacing: .06em; color: var(--amber); text-transform: uppercase; }
 
-  .post { padding: 12px 16px; border-top: 1px solid var(--line); display: flex; gap: 12px; }
-  .imp { flex: 0 0 42px; text-align: center; }
-  .imp .num { font-weight: 700; font-size: 15px; }
-  .imp .bar { height: 4px; border-radius: 3px; margin-top: 4px; background: var(--line); overflow: hidden; }
-  .imp .bar span { display: block; height: 100%; }
+  .digest {
+    margin: 0 16px 12px; padding: 12px 14px; background: var(--panel-2);
+    border: 1px solid var(--rule); border-left: 2px solid var(--amber); border-radius: 3px;
+  }
+  .digest .digest-label {
+    display: block; font: 600 10px/1 var(--font-mono); letter-spacing: .12em;
+    color: var(--amber); text-transform: uppercase; margin-bottom: 6px;
+  }
+  .digest ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--paper-dim); }
+  .digest li { margin: 3px 0; }
+
+  .post {
+    padding: 12px 16px; border-top: 1px solid var(--rule); border-left: 3px solid transparent;
+    display: flex; gap: 12px;
+  }
+  .post.band-flash { border-left-color: var(--amber); }
+  .post.band-bulletin { border-left-color: var(--amber-dim); }
+  .post.band-urgent { border-left-color: var(--teal); }
+
+  .imp { flex: 0 0 66px; text-align: center; }
+  .imp .num { font: 700 21px/1 var(--font-mono); color: var(--paper); }
+  .stamp {
+    display: inline-block; margin-top: 5px; padding: 1px 5px; border-radius: 3px;
+    font: 700 9px/1.5 var(--font-mono); letter-spacing: .05em; text-transform: uppercase;
+    border: 1px solid currentColor; white-space: nowrap;
+  }
+  .stamp.flash { color: var(--amber); background: var(--amber-dim); }
+  .stamp.bulletin { color: var(--amber); background: transparent; border-color: var(--rule); }
+  .stamp.urgent { color: var(--teal); background: var(--teal-dim); }
+  .stamp.routine { color: var(--paper-dim); background: transparent; border-color: var(--rule); }
+  .stamp.deferred { color: var(--paper-dim); background: transparent; border-color: var(--rule); opacity: .55; }
+
   .body { flex: 1; min-width: 0; }
   .who { font-weight: 600; }
-  .handle { color: var(--muted); font-weight: 400; }
-  .reason { color: var(--muted); font-size: 12.5px; font-style: italic; margin: 2px 0 6px; }
+  .handle { color: var(--paper-dim); font-weight: 400; }
+  .who a { color: inherit; text-decoration: none; }
+  .who a:hover { color: var(--amber); }
+  .reason { color: var(--paper-dim); font-size: 12.5px; font-style: italic; margin: 3px 0 6px; }
   .text { display: block; white-space: pre-wrap; overflow-wrap: anywhere; color: inherit; text-decoration: none; }
   .text:hover { color: #fff; }
-  .who a { color: inherit; text-decoration: none; }
-  .who a:hover { color: var(--accent); }
-  .topic {
-    display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px;
-    font-size: 11px; letter-spacing: .3px; text-transform: uppercase;
-    background: var(--panel-2); color: var(--muted); border: 1px solid var(--line);
-    vertical-align: middle;
-  }
-  .topic-politics { background: rgba(229,84,75,.15); color: var(--down); border-color: var(--down); }
-  .tone {
-    display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px;
-    font-size: 11px; letter-spacing: .3px; text-transform: uppercase;
-    background: rgba(229,84,75,.12); color: var(--down); border: 1px solid rgba(229,84,75,.4);
-    vertical-align: middle;
-  }
-  .tone-good { background: rgba(53,194,107,.12); color: var(--up); border-color: rgba(53,194,107,.4); }
-  .link { display: inline-block; margin-top: 6px; color: var(--accent); font-size: 13px; text-decoration: none; }
 
-  .controls { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .tag {
+    font: 600 11px/1 var(--font-mono); letter-spacing: .03em; text-transform: uppercase;
+    color: var(--paper-dim); margin-left: 8px; vertical-align: middle;
+  }
+  .tag.warn { color: var(--spike); }
+  .tag.good { color: var(--teal); }
+  .link { display: inline-block; margin-top: 6px; color: var(--amber); font: 500 13px/1 var(--font-mono); text-decoration: none; }
+  .link:hover { text-decoration: underline; }
+
+  .controls { display: flex; align-items: center; gap: 8px; margin-top: 9px; flex-wrap: wrap; }
   .tbtn {
-    border: 1px solid var(--line); background: var(--panel-2); color: var(--muted);
-    border-radius: 7px; padding: 4px 9px; cursor: pointer; font-size: 13px;
+    border: 1px solid var(--rule); background: var(--panel-2); color: var(--paper-dim);
+    border-radius: 3px; padding: 4px 10px; cursor: pointer; font: 600 12px/1 var(--font-mono);
+    text-transform: uppercase; letter-spacing: .04em;
   }
-  .tbtn:hover { color: var(--text); }
-  .tbtn.up.active { background: rgba(53,194,107,.15); border-color: var(--up); color: var(--up); }
-  .tbtn.down.active { background: rgba(229,84,75,.15); border-color: var(--down); color: var(--down); }
+  .tbtn:hover { color: var(--paper); border-color: var(--paper-dim); }
+  .tbtn.up.active { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); }
+  .tbtn.down.active { background: var(--spike-dim); border-color: var(--spike); color: var(--spike); }
   select.cat {
-    background: var(--panel-2); color: var(--muted); border: 1px solid var(--line);
-    border-radius: 7px; padding: 4px 6px; font-size: 12.5px;
+    background: var(--panel-2); color: var(--paper-dim); border: 1px solid var(--rule);
+    border-radius: 3px; padding: 4px 6px; font: 500 12px/1 var(--font-mono);
   }
-  .saved { font-size: 12px; color: var(--up); opacity: 0; transition: opacity .2s; }
+  .tbtn:focus-visible, select.cat:focus-visible, .appeal-send:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--amber); outline-offset: 1px;
+  }
+  .saved { font: 600 11px/1 var(--font-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--teal); opacity: 0; transition: opacity .2s; }
   .saved.show { opacity: 1; }
-  .empty { color: var(--muted); padding: 40px 16px; text-align: center; }
+  .empty { color: var(--paper-dim); padding: 50px 16px; text-align: center; font-size: 14px; }
 
-  .argue-box { display: none; margin-top: 8px; }
-  .argue-box.open { display: block; }
-  .argue-box textarea {
+  .appeal-box { display: none; margin-top: 9px; }
+  .appeal-box.open { display: block; }
+  .appeal-box textarea {
     width: 100%; min-height: 58px; resize: vertical;
-    background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
-    border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13.5px;
+    background: var(--panel-2); color: var(--paper); border: 1px solid var(--rule);
+    border-radius: 3px; padding: 8px 10px; font: 13.5px/1.5 var(--font-body);
   }
-  .argue-box textarea:focus { outline: none; border-color: var(--accent); }
-  .argue-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
-  .argue-send {
-    border: 1px solid var(--accent); background: rgba(91,157,255,.15); color: var(--accent);
-    border-radius: 7px; padding: 4px 12px; cursor: pointer; font-size: 13px;
+  .appeal-box textarea:focus { outline: none; border-color: var(--amber); }
+  .appeal-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+  .appeal-send {
+    border: 1px solid var(--amber); background: var(--amber-dim); color: var(--amber);
+    border-radius: 3px; padding: 4px 12px; cursor: pointer;
+    font: 700 12px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .05em;
   }
-  .argue-send:disabled { opacity: .5; cursor: default; }
-  .argue-hint { color: var(--muted); font-size: 12px; }
-  .reply {
-    display: none; margin-top: 8px; padding: 10px 12px; border-radius: 8px;
-    background: rgba(91,157,255,.08); border: 1px solid rgba(91,157,255,.3);
-    font-size: 13.5px; color: #d3d8e0;
-  }
+  .appeal-send:disabled { opacity: .5; cursor: default; }
+  .appeal-hint { color: var(--paper-dim); font-size: 12px; }
+
+  .reply { display: none; margin-top: 10px; }
   .reply.show { display: block; }
-  .reply .verdict { color: var(--muted); font-size: 12px; margin-top: 6px; }
-  .imp .num.bump { transition: color .3s; color: var(--up); }
+  .verdict-stamp {
+    display: inline-block; margin: 0 0 8px; padding: 3px 10px;
+    font: 800 14px/1.3 var(--font-display); text-transform: uppercase; letter-spacing: .07em;
+    border: 2px solid currentColor; border-radius: 4px; transform: rotate(-6deg);
+  }
+  .verdict-stamp.held { color: var(--spike); }
+  .verdict-stamp.revised { color: var(--teal); }
+  .verdict-stamp.show { animation: stampIn .32s ease-out; }
+  .reply p { margin: 0; padding: 10px 12px; background: var(--panel-2); border: 1px solid var(--rule);
+    border-radius: 3px; font-size: 13.5px; color: var(--paper); }
+  .verdict-line { color: var(--paper-dim); font: 500 11.5px/1 var(--font-mono); margin-top: 7px; letter-spacing: .02em; }
+  .imp .num.bump { transition: color .3s; color: var(--teal); }
+
+  @keyframes stampIn {
+    0% { transform: scale(2.1) rotate(-9deg); opacity: 0; }
+    60% { transform: scale(.94) rotate(-6deg); opacity: 1; }
+    100% { transform: scale(1) rotate(-6deg); opacity: 1; }
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: .55; }
+    50% { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .verdict-stamp.show { animation: none; }
+    .lamp { animation: none; }
+    .imp .num.bump { transition: none; }
+  }
+
+  @media (max-width: 480px) {
+    header { flex-wrap: wrap; }
+    header .meta { margin-left: 0; text-align: left; flex-basis: 100%; }
+    .post { flex-direction: column; gap: 8px; }
+    .imp { flex-direction: row; align-items: baseline; gap: 8px; text-align: left; }
+    .imp .stamp { margin-top: 0; }
+  }
 </style>
 </head>
 <body>
+{% set desk_eyebrow = {
+  "opportunities": "DESK · ASSIGNMENTS",
+  "ai_startups": "DESK · TECH",
+  "events_parties": "DESK · SOCIETY",
+  "ai_news": "WIRE · AI",
+  "startup_news": "WIRE · BUSINESS",
+  "noise": "THE SPIKE"
+} %}
+{% macro band_class(score) -%}
+{%- if score >= 90 -%}flash
+{%- elif score >= 70 -%}bulletin
+{%- elif score >= 45 -%}urgent
+{%- elif score >= 20 -%}routine
+{%- else -%}deferred
+{%- endif -%}
+{%- endmacro %}
+{% set band_labels = {"flash": "FLASH", "bulletin": "BULLETIN", "urgent": "URGENT", "routine": "ROUTINE", "deferred": "DEFERRED"} %}
+
 <header>
-  <h1>Timeline Triage</h1>
+  <span class="lamp" aria-hidden="true"></span>
+  <h1>Own Your Algorithm</h1>
   {% if generated_at %}
-    <span class="meta">{{ total }} posts · pulled {{ generated_at.replace("T", " ") }}</span>
+    <span class="meta">{{ total }} on file · pulled {{ generated_at.replace("T", " ") }}</span>
   {% else %}
-    <span class="meta">no data yet — run <code>python pipeline.py</code></span>
+    <span class="meta">wire's quiet — run <code>python pipeline.py</code></span>
   {% endif %}
 </header>
 
 <main>
 {% if not sections %}
-  <div class="empty">Nothing to show. Run <code>python pipeline.py</code> to pull and classify a fresh batch.</div>
+  <div class="empty">The wire's empty. Run <code>python pipeline.py</code> to pull today's dispatches.</div>
 {% endif %}
 
 {% for key, sec in sections %}
   {% if sec.posts %}
   <details class="section" {% if key != "noise" %}open{% endif %}>
     <summary>
-      <h2>{{ sec.label }}</h2>
+      <div>
+        <div class="desk-code">{{ desk_eyebrow.get(key, "DESK") }}</div>
+        <h2>{{ sec.label }}</h2>
+      </div>
       <span class="count">
-        {{ sec.total|default(sec.posts|length) }}
+        {{ sec.total|default(sec.posts|length) }} on file
         {% if sec.total|default(0) > sec.posts|length %}<span style="opacity:.6">· showing {{ sec.posts|length }}</span>{% endif %}
       </span>
-      {% if sec.posts %}<span class="chip">top {{ sec.posts[0].importance }}</span>{% endif %}
+      {% if sec.posts %}<span class="lead">lead {{ sec.posts[0].importance }}</span>{% endif %}
     </summary>
 
     {% if sec.summary %}
-      <div class="summary-box" data-md>{{ sec.summary }}</div>
+      <div class="digest">
+        <span class="digest-label">Wire digest</span>
+        <div data-md>{{ sec.summary }}</div>
+      </div>
     {% endif %}
 
     {% for p in sec.posts %}
       {% set fb = given.get(p.id) %}
-      <div class="post" data-id="{{ p.id }}" data-handle="{{ p.handle }}">
+      {% set bc = band_class(p.importance) %}
+      <div class="post band-{{ bc }}" data-id="{{ p.id }}" data-handle="{{ p.handle }}">
         <div class="imp">
           <div class="num">{{ p.importance }}</div>
-          <div class="bar"><span style="width: {{ p.importance }}%; background: {{ '#35c26b' if p.importance >= 66 else '#e0a83a' if p.importance >= 33 else '#6b7280' }};"></span></div>
+          <div class="stamp {{ bc }}">{{ band_labels[bc] }}</div>
         </div>
         <div class="body">
           <div class="who">
             <a href="{{ p.url }}" target="_blank" rel="noopener">{{ p.author }} <span class="handle">@{{ p.handle }}</span></a>
-            {% if p.topic %}<span class="topic {{ 'topic-politics' if p.topic == 'politics' }}">{{ p.topic }}</span>{% endif %}
-            {% if p.tone and p.tone not in ['neutral', 'substantive'] %}<span class="tone">{{ p.tone }}</span>{% elif p.tone == 'substantive' %}<span class="tone tone-good">substantive</span>{% endif %}
+            {% if p.topic %}<span class="tag {{ 'warn' if p.topic == 'politics' }}">{{ p.topic }}</span>{% endif %}
+            {% if p.tone and p.tone not in ['neutral', 'substantive'] %}<span class="tag warn">{{ p.tone }}</span>{% elif p.tone == 'substantive' %}<span class="tag good">substantive</span>{% endif %}
           </div>
           {% if p.reason %}<div class="reason">{{ p.reason }}</div>{% endif %}
           <a class="text" href="{{ p.url }}" target="_blank" rel="noopener">{{ p.text }}</a>
           <div><a class="link" href="{{ p.url }}" target="_blank" rel="noopener">open on X ↗</a></div>
           <div class="controls">
-            <button class="tbtn up {{ 'active' if fb and fb.signal == 'up' }}" data-sig="up">▲ important</button>
-            <button class="tbtn down {{ 'active' if fb and fb.signal == 'down' }}" data-sig="down">▼ noise</button>
-            <select class="cat" title="fix category">
-              <option value="">— move to —</option>
+            <button class="tbtn up {{ 'active' if fb and fb.signal == 'up' }}" data-sig="up">▲ Keep</button>
+            <button class="tbtn down {{ 'active' if fb and fb.signal == 'down' }}" data-sig="down">▼ Spike</button>
+            <select class="cat" title="reassign desk">
+              <option value="">— reassign to —</option>
               {% for ck, cl in category_choices %}
                 <option value="{{ ck }}" {{ 'selected' if fb and fb.corrected_category == ck }}>{{ cl }}</option>
               {% endfor %}
             </select>
-            <button class="tbtn argue-btn">💬 argue</button>
-            <span class="saved">saved</span>
+            <button class="tbtn appeal-btn">Appeal</button>
+            <span class="saved">filed</span>
           </div>
-          <div class="argue-box">
-            <textarea placeholder="Tell the AI why this score is wrong (or right) and how it should change…">{{ fb.argument if fb and fb.argument else '' }}</textarea>
-            <div class="argue-row">
-              <button class="argue-send">Send to AI</button>
-              <span class="argue-hint">it re-scores this post and can push back</span>
+          <div class="appeal-box">
+            <textarea placeholder="Make your case — what should change, and why?">{{ fb.argument if fb and fb.argument else '' }}</textarea>
+            <div class="appeal-row">
+              <button class="appeal-send">Send appeal</button>
+              <span class="appeal-hint">the desk re-scores this and can hold its ground</span>
             </div>
           </div>
           <div class="reply"></div>
@@ -196,13 +304,21 @@
 </main>
 
 <script>
-  // Render the news summaries (markdown bullets) into simple lists.
+  // Render the wire digests (markdown bullets) into simple lists.
   document.querySelectorAll("[data-md]").forEach(el => {
     const lines = el.textContent.trim().split("\n").map(l => l.trim()).filter(Boolean);
     const items = lines.map(l => l.replace(/^[-*]\s*/, ""));
-    el.innerHTML = "<ul>" + items.map(i => "<li></li>").join("") + "</ul>";
+    el.innerHTML = "<ul>" + items.map(() => "<li></li>").join("") + "</ul>";
     el.querySelectorAll("li").forEach((li, i) => { li.textContent = items[i]; });
   });
+
+  function bandInfo(v) {
+    if (v >= 90) return { cls: "flash", label: "FLASH" };
+    if (v >= 70) return { cls: "bulletin", label: "BULLETIN" };
+    if (v >= 45) return { cls: "urgent", label: "URGENT" };
+    if (v >= 20) return { cls: "routine", label: "ROUTINE" };
+    return { cls: "deferred", label: "DEFERRED" };
+  }
 
   function post(el) {
     const sig = el.querySelector(".tbtn.up.active") ? "up"
@@ -225,20 +341,16 @@
     });
   }
 
-  function barColor(v) {
-    return v >= 66 ? "#35c26b" : v >= 33 ? "#e0a83a" : "#6b7280";
-  }
-
-  function argue(el) {
-    const box = el.querySelector(".argue-box");
+  function appeal(el) {
+    const box = el.querySelector(".appeal-box");
     const textarea = box.querySelector("textarea");
-    const send = box.querySelector(".argue-send");
+    const send = box.querySelector(".appeal-send");
     const reply = el.querySelector(".reply");
     const argument = textarea.value.trim();
     if (!argument) { textarea.focus(); return; }
 
     send.disabled = true;
-    send.textContent = "Thinking…";
+    send.textContent = "Filing…";
     fetch("/argue", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -247,59 +359,68 @@
       .then(r => r.json())
       .then(d => {
         send.disabled = false;
-        send.textContent = "Send to AI";
+        send.textContent = "Send appeal";
         if (!d.ok) { reply.textContent = "Error: " + (d.error || "failed"); reply.classList.add("show"); return; }
 
         const num = el.querySelector(".imp .num");
-        const bar = el.querySelector(".imp .bar span");
+        const stamp = el.querySelector(".imp .stamp");
+        const info = bandInfo(d.importance);
         num.textContent = d.importance;
         num.classList.add("bump");
         setTimeout(() => num.classList.remove("bump"), 600);
-        bar.style.width = d.importance + "%";
-        bar.style.background = barColor(d.importance);
+        stamp.className = "stamp " + info.cls;
+        stamp.textContent = info.label;
+        el.className = el.className.replace(/\bband-\S+/, "band-" + info.cls);
         if (d.reason) el.querySelector(".reason").textContent = d.reason;
 
         const delta = d.importance - d.old_importance;
-        const move = delta === 0 ? "held the score"
+        const held = delta === 0;
+        const move = held ? "held the score"
                    : (delta > 0 ? "raised it +" + delta : "lowered it " + delta);
+
         reply.innerHTML = "";
-        const p = document.createElement("div");
+        const stampEl = document.createElement("div");
+        stampEl.className = "verdict-stamp " + (held ? "held" : "revised");
+        stampEl.textContent = held ? "STET" : "RE-RATED";
+        const p = document.createElement("p");
         p.textContent = d.reply;
         const v = document.createElement("div");
-        v.className = "verdict";
+        v.className = "verdict-line";
         v.textContent = "→ now " + d.importance + " in " + d.category_label + " (" + move + ")";
+        reply.appendChild(stampEl);
         reply.appendChild(p);
         reply.appendChild(v);
         reply.classList.add("show");
+        requestAnimationFrame(() => stampEl.classList.add("show"));
       })
       .catch(() => {
         send.disabled = false;
-        send.textContent = "Send to AI";
-        reply.textContent = "Network error — is app.py still running?";
+        send.textContent = "Send appeal";
+        reply.textContent = "Couldn't reach the desk — is app.py still running?";
         reply.classList.add("show");
       });
   }
 
   document.querySelectorAll(".post").forEach(el => {
-    el.querySelectorAll(".tbtn:not(.argue-btn)").forEach(btn => {
+    el.querySelectorAll(".tbtn:not(.appeal-btn)").forEach(btn => {
       btn.addEventListener("click", () => {
         const wasActive = btn.classList.contains("active");
-        el.querySelectorAll(".tbtn:not(.argue-btn)").forEach(b => b.classList.remove("active"));
+        el.querySelectorAll(".tbtn:not(.appeal-btn)").forEach(b => b.classList.remove("active"));
         if (!wasActive) btn.classList.add("active");
         post(el);
       });
     });
     el.querySelector("select.cat").addEventListener("change", () => post(el));
 
-    const argueBtn = el.querySelector(".argue-btn");
-    const box = el.querySelector(".argue-box");
-    argueBtn.addEventListener("click", () => {
+    const appealBtn = el.querySelector(".appeal-btn");
+    const box = el.querySelector(".appeal-box");
+    appealBtn.addEventListener("click", () => {
       box.classList.toggle("open");
       if (box.classList.contains("open")) box.querySelector("textarea").focus();
     });
-    box.querySelector(".argue-send").addEventListener("click", () => argue(el));
+    box.querySelector(".appeal-send").addEventListener("click", () => appeal(el));
     box.querySelector("textarea").addEventListener("keydown", e => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") argue(el);
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") appeal(el);
     });
   });
 </script>
