@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+auth_state.json
+digests/
+posts.db
+data.json
+feedback.json
+profile.md

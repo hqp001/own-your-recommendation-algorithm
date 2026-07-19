@@ -1,0 +1,85 @@
+# scroll-agent configuration
+
+# Playwright session
+headless: true          # run.py overrides this with --headed when needed
+auth_state_file: auth_state.json
+
+# Sources to scrape each run. Types: home, following, list, search, profile.
+# Fill in your own list ids, search queries, and handles. Scraping stops early
+# per source once the feed stops yielding new posts, so a big scroll_count is
+# safe.
+sources:
+  - type: home
+  # - type: following
+  # - type: list
+  #   value: "1234567890123456789"   # the id from x.com/i/lists/<id>
+  # - type: search
+  #   value: "YC W26"
+  # - type: search
+  #   value: "fellowship application"
+  # - type: profile
+  #   value: "paulg"
+
+# Scrolling
+scroll_count: 60         # max scroll steps per source (higher = deeper into the feed)
+scroll_pause_ms: 2000    # wait between scrolls for content to load
+
+# Curation
+# Case-insensitive substring match against tweet text + author handle.
+# Leave a list empty to disable that filter.
+keywords_include: []     # if non-empty, only posts matching one of these survive
+keywords_exclude:        # posts matching any of these are dropped
+  - giveaway
+  - airdrop
+
+# Classification
+# Each post gets a topic (politics, business, academia, technology, science,
+# culture, sports, personal, other) and a tone (substantive, neutral, shitpost,
+# ragebait). Importance is multiplied by the matching factors below.
+# A factor above 1 boosts, below 1 dampens, 0 buries.
+importance_factors:
+  topic:
+    politics: 0.3
+    business: 1.3
+    academia: 1.3
+  tone:
+    shitpost: 0.2
+    ragebait: 0.1
+
+# Classification is done in concurrent batches so large runs stay fast.
+classify_batch_size: 25
+classify_concurrency: 4
+
+# Two-tier classification. A cheap model does a coarse keep/drop pass first;
+# only survivors get the detailed (and more expensive) scoring pass. This cuts
+# cost sharply when volume is high and most posts are junk. Set prefilter_model
+# to null to disable. Point openai_model at a stronger model once the pre-filter
+# is shielding it, if you want better scoring.
+prefilter_model: gpt-4o-mini
+prefilter_batch_size: 60
+
+# Safety net: posts whose text or handle contains any of these always skip the
+# pre-filter and go straight to detailed scoring, so thin-but-important posts
+# (a bare YC apply link, a party invite) are never cheaply dropped.
+always_keep_keywords:
+  - ycombinator
+  - fellowship
+  - grant
+  - accelerator
+  - cohort
+  - residency
+  - scholarship
+  - hackathon
+  - applications open
+  - now accepting
+  - apply by
+  - deadline
+  - "you're invited"
+  - rsvp
+
+# UI shows at most this many posts per category (the store keeps everything).
+ui_posts_per_category: 60
+
+# Summarization
+openai_model: gpt-4o-mini
+digest_dir: digests
