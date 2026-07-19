@@ -15,7 +15,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from config import load_config
+from config import load_config, resolve_scrape_settings
 from filters import filter_posts
 from scraper import run_scrape
 from summarizer import summarize_posts
@@ -37,8 +37,7 @@ def main() -> None:
     if not Path(cfg["auth_state_file"]).exists():
         raise SystemExit("No saved session found. Run `python auth.py` first to log in.")
 
-    scroll_count = args.scrolls or cfg["scroll_count"]
-    headless = cfg["headless"] and not args.headed
+    scroll_count, headless = resolve_scrape_settings(cfg, args)
 
     print(f"Scraping X home timeline ({scroll_count} scrolls, headless={headless})...")
     posts = run_scrape(cfg["auth_state_file"], scroll_count, cfg["scroll_pause_ms"], headless)

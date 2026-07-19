@@ -19,11 +19,10 @@ import store
 from categories import CATEGORY_KEYS, label
 from classifier import reevaluate_post
 from config import load_config
-from profile import load_profile
+from profile import FEEDBACK_PATH, load_feedback, load_profile
 
 ROOT = Path(__file__).parent
 DATA_PATH = ROOT / "data.json"
-FEEDBACK_PATH = ROOT / "feedback.json"
 
 load_dotenv()
 app = Flask(__name__)
@@ -35,10 +34,16 @@ def load_data() -> dict:
     return {"generated_at": None, "total": 0, "categories": {}}
 
 
-def load_feedback() -> list[dict]:
-    if FEEDBACK_PATH.exists():
-        return json.loads(FEEDBACK_PATH.read_text())
-    return []
+def _pop_feedback(post_id: str) -> tuple[dict | None, list[dict]]:
+    """Prior feedback entry for post_id (or None), and the remaining entries
+    with it removed."""
+    entries = load_feedback()
+    prior = next((e for e in entries if e["id"] == post_id), None)
+    return prior, [e for e in entries if e["id"] != post_id]
+
+
+def _write_feedback(entries: list[dict]) -> None:
+    FEEDBACK_PATH.write_text(json.dumps(entries, indent=2))
 
 
 @app.route("/")
@@ -69,11 +74,9 @@ def feedback():
     if not post_id:
         return jsonify({"ok": False, "error": "missing id"}), 400
 
-    entries = load_feedback()
     # One entry per post id; last action wins. Preserve any argument already
     # recorded for this post so a thumbs change doesn't wipe it.
-    prior = next((e for e in entries if e["id"] == post_id), None)
-    entries = [e for e in entries if e["id"] != post_id]
+    prior, entries = _pop_feedback(post_id)
 
     signal = payload.get("signal")  # "up", "down", or None to clear
     corrected = payload.get("corrected_category")
@@ -88,7 +91,7 @@ def feedback():
             "argument": argument,
         })
 
-    FEEDBACK_PATH.write_text(json.dumps(entries, indent=2))
+    _write_feedback(entries)
     return jsonify({"ok": True})
 
 
@@ -117,9 +120,7 @@ def argue():
     store.save_classifications([post])
 
     # Merge the argument into this post's feedback entry so the profile learns.
-    entries = load_feedback()
-    prior = next((e for e in entries if e["id"] == post_id), None)
-    entries = [e for e in entries if e["id"] != post_id]
+    prior, entries = _pop_feedback(post_id)
     entries.append({
         "id": post_id,
         "signal": prior.get("signal") if prior else None,
@@ -128,7 +129,7 @@ def argue():
         "text": post.get("text", ""),
         "argument": argument,
     })
-    FEEDBACK_PATH.write_text(json.dumps(entries, indent=2))
+    _write_feedback(entries)
 
     return jsonify({
         "ok": True,

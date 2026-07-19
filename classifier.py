@@ -13,6 +13,18 @@ from categories import CATEGORY_KEYS, TOPICS
 
 TONES = ["substantive", "neutral", "shitpost", "ragebait"]
 
+_client: OpenAI | None = None
+
+
+def _get_client() -> OpenAI:
+    """Lazily construct a shared client, so import order doesn't matter for
+    whether OPENAI_API_KEY has been loaded yet (e.g. via load_dotenv())."""
+    global _client
+    if _client is None:
+        _client = OpenAI()
+    return _client
+
+
 SYSTEM_PROMPT = """\
 You triage posts from someone's X (Twitter) home timeline according to the
 taste profile they give you. For each post assign:
@@ -66,7 +78,7 @@ keep. Anything not listed is dropped."""
 
 
 def _prefilter_batch(posts: list[dict], model: str) -> set[int]:
-    client = OpenAI()
+    client = _get_client()
     response = client.chat.completions.create(
         model=model,
         response_format={"type": "json_object"},
@@ -139,7 +151,7 @@ def _format_posts(posts: list[dict]) -> str:
 
 
 def _classify_batch(posts: list[dict], profile: str, model: str) -> list[dict]:
-    client = OpenAI()
+    client = _get_client()
     response = client.chat.completions.create(
         model=model,
         response_format={"type": "json_object"},
@@ -244,7 +256,7 @@ def reevaluate_post(
     in place (category/topic/tone/importance/reason) and returns the model's
     short spoken reply to the user."""
     factors = factors or {}
-    client = OpenAI()
+    client = _get_client()
     prior = {
         "category": post.get("category"),
         "topic": post.get("topic"),

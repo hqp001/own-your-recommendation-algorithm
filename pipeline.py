@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 import store
 from categories import CATEGORY_KEYS, NEWS_CATEGORIES, label
 from classifier import classify_posts, mark_dropped, prefilter_posts
-from config import load_config
+from config import load_config, resolve_scrape_settings
 from profile import update_profile_from_feedback
 from scraper import run_scrape_sources
 from summarizer import summarize_category
@@ -52,8 +52,7 @@ def main() -> None:
 
     store.init_db()
     sources = cfg.get("sources") or [{"type": "home"}]
-    scroll_count = args.scrolls or cfg["scroll_count"]
-    headless = cfg["headless"] and not args.headed
+    scroll_count, headless = resolve_scrape_settings(cfg, args)
 
     if not args.no_scrape:
         print(f"Scraping {len(sources)} source(s), up to {scroll_count} scrolls each...")

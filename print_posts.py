@@ -9,7 +9,7 @@ Usage:
 import argparse
 from pathlib import Path
 
-from config import load_config
+from config import load_config, resolve_scrape_settings
 from scraper import run_scrape
 
 
@@ -27,8 +27,7 @@ def main() -> None:
     if not Path(cfg["auth_state_file"]).exists():
         raise SystemExit("No saved session found. Run `python auth.py` first (or refresh cookies).")
 
-    scroll_count = args.scrolls or cfg["scroll_count"]
-    headless = cfg["headless"] and not args.headed
+    scroll_count, headless = resolve_scrape_settings(cfg, args)
 
     posts = run_scrape(cfg["auth_state_file"], scroll_count, cfg["scroll_pause_ms"], headless)
 
