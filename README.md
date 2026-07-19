@@ -1,4 +1,4 @@
-# scroll-agent
+# Own Your Recommendation Algorithm
 
 Scrolls your X (Twitter) home timeline so you don't have to, then hands you
 back a curated, summarized digest instead of raw doomscroll.
